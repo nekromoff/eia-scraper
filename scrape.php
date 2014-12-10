@@ -5,7 +5,7 @@
 </head>
 <body>
 <?php
-require('config.php.example');
+require('config.php');
 require('simple_html_dom.php');
 require('PHPMailer/PHPMailerAutoload.php');
 $hashes=file_get_contents('lasthash.txt');
