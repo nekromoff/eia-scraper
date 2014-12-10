@@ -1,0 +1,12 @@
+<?php
+
+$config["smtp"]='smtp.example.com';
+$config["user"]='username';
+$config["password"]='password';
+$config["from"]='from@example.com';
+$config["fromname"]='Sender';
+$config["to"]='to@example.com';
+$config["subject"]='Subject';
+$config["filter"]='city'; // city name to filter
+
+?>
