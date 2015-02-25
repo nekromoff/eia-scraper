@@ -18,7 +18,7 @@ $mail->Username = $config["user"];                 // SMTP username
 $mail->Password = $config["password"];                           // SMTP password
 $mail->SMTPSecure = 'ssl';                            // Enable TLS encryption, `ssl` also accepted
 $mail->Port = 465;                                    // TCP port to connect to
-
+$mail->CharSet = 'UTF-8';
 $mail->From = $config["from"];
 $mail->FromName = $config["fromname"];
 $mail->addAddress($config["to"]);     // Add a recipient
@@ -26,12 +26,6 @@ $mail->addAddress($config["to"]);     // Add a recipient
 $mail->Subject = $config["subject"];
 
 $filtercity=$config["filter"];
-
-/* CURL not used
-$ch=curl_init();
-curl_setopt($ch, CURLOPT_HEADER, 0);
-curl_setopt($ch, CURLOPT_RETURNTRANSFER,1);
-*/
 
 $html=file_get_html("http://www.enviroportal.sk/sk/eia/print?search[name]=&search[act]=&search[activity]=&search[country]=1&search[district]=101&search[state]=&search[crossborder_country]=&search[_token]=3e7c06fc2c9fd18ea7e969d387da10050707bdc6");
 
@@ -47,7 +41,7 @@ foreach($html->find('tr') as $line)
    $status=$parts[2];
    if (!$filtercity OR ($filtercity AND stripos($city,$filtercity)!==FALSE))
       {
-      $projects[$i]["desc"]=trim($project);
+      $projects[$i]["name"]=trim($project);
       $projects[$i]["link"]=trim($link);
       $projects[$i]["city"]=trim(preg_replace('!\s+!', ' ', $city));
       $projects[$i]["category"]=trim($category);
@@ -55,7 +49,6 @@ foreach($html->find('tr') as $line)
       $i++;
       }
    }
-
 
 $mail->Body="";
 
@@ -65,27 +58,25 @@ foreach($projects as $project)
    if (stripos($hashes,$hash)===FALSE)
       {
       file_put_contents('lasthash.txt',$hash."\n",FILE_APPEND);
-      $mail->Body.="===================================================================\n";
-      $mail->Body.=$project["desc"]."\n";
+      $mail->Body="===================================================================\n";
+      $mail->Body.=$project["name"]."\n";
       $mail->Body.=$project["city"]."; ".$project["category"]."\n";
       $mail->Body.=$project["status"]."\n";
       $mail->Body.="http://www.enviroportal.sk".$project["link"]."\n";
+      $mail->Subject.=" ".$project["name"];
+      if(!$mail->send())
+         {
+         echo 'Message could not be sent.';
+         echo 'Mailer Error: ' . $mail->ErrorInfo;
+         }
+      else
+         {
+         echo 'Message has been sent';
+         }
       }
    }
 
-if ($mail->Body)
-   {
-   if(!$mail->send())
-      {
-      echo 'Message could not be sent.';
-      echo 'Mailer Error: ' . $mail->ErrorInfo;
-      }
-   else
-      {
-      echo 'Message has been sent';
-      }
-   }
-else
+if (!$mail->Body)
    {
    echo 'nothing new';
    }
