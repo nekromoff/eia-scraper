@@ -54,6 +54,7 @@ $mail->Body="";
 
 foreach($projects as $project)
    {
+   $mail->Subject = $config["subject"];
    $hash=md5($project["link"].$project["status"]);
    if (stripos($hashes,$hash)===FALSE)
       {
