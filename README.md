@@ -15,6 +15,9 @@ Future plans
 Dependencies
 ------------
 
+# HTML pages parsing
+PHP Simple HTML DOM Parser: http://simplehtmldom.sourceforge.net
+
 ### Email
 PHPMail: https://github.com/PHPMailer/PHPMailer
 
