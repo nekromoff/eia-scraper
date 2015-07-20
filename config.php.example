@@ -1,5 +1,6 @@
 <?php
 
+/** email sending details */
 $config["smtp"]='smtp.example.com';
 $config["user"]='username';
 $config["password"]='password';
@@ -7,6 +8,29 @@ $config["from"]='from@example.com';
 $config["fromname"]='Sender';
 $config["to"]='to@example.com';
 $config["subject"]='Subject';
-$config["filter"]='city'; // city name to filter
+
+/** EIA projects filter */
+// city name to look for
+$config["filter"]='city';
+
+/** template file */
+// template filename (must be docx)
+$config["template"]='template.docx';
+// template directory
+$config["tempdir"]='tmp/';
+// CSV file with addresses to use for template, format: name|usedname|street|city|zip|email
+$config["addresses"]='example.csv';
+
+/** google drive details for file upload */
+// google drive client id - get it here (credentials): https://console.developers.google.com
+$config["gdrive-clientid"]='';
+// google drive client email - get it here (credentials): https://console.developers.google.com
+$config["gdrive-clientemail"]='';
+// google drive keyfile p12 - get it here (credentials): https://console.developers.google.com
+$config["gdrive-keyfile"]='';
+// google drive folder ID to put generated documents in
+$config["gdrive-folderid"]='';
+// google drive users to give "writer" permissions to
+$config["gdrive-users"]=array();
 
 ?>
