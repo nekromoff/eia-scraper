@@ -15,7 +15,7 @@ Future plans
 Dependencies
 ------------
 
-# HTML pages parsing
+### HTML pages parsing
 PHP Simple HTML DOM Parser: http://simplehtmldom.sourceforge.net
 
 ### Email
