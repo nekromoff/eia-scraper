@@ -8,7 +8,12 @@
 require('config.php');
 require('simple_html_dom.php');
 require('PHPMailer/PHPMailerAutoload.php');
-$hashes=file_get_contents('lasthash.txt');
+$hashes=file('lasthash.txt');
+foreach ($hashes as $key=>$hash)
+   {
+   $hashes[$key]=trim($hash);
+   }
+$hashes=array_reverse($hashes,TRUE);
 if ($config["gdrive-clientid"])
    {
    define('GOOGLE_CLIENT_ID',$config['gdrive-clientid']);
@@ -72,21 +77,27 @@ foreach($html->find('tr') as $line)
    }
 
 $mail->Body="";
+$existingprojectstate=0;
 
 foreach($projects as $project)
    {
    $mail->Subject = $config["subject"];
-   $hash=md5($project["link"].$project["status"]);
-   if (stripos($hashes,$hash)===FALSE)
+   $hash=trim(strtolower(md5($project["link"].$project["status"])));
+   $hashkey=array_search($hash,$hashes);
+   // arbitraty set number of existing (3) projects between already found project in the same state
+   if ($hashkey AND $hashkey<count($hashes)-3) $existingprojectstate=1;
+   //echo $project["name"],' ',$existingproject,' ',$hashkey;
+   if (!$hashkey OR $existingprojectstate)
       {
       file_put_contents('lasthash.txt',$hash."\n",FILE_APPEND);
-      $mail->Body.=$project["name"]."\n";
+      $mail->Body=$project["name"]."\n";
       $mail->Body.=$project["city"]."; ".$project["category"]."\n";
       $mail->Body.=$project["status"]."\n";
+      if ($existingprojectstate) $mail->Body.="Zmena / doplnené dokumenty\n";
       $mail->Body.=$project["institution"]."\n";
       $mail->Body.="http://www.enviroportal.sk".$project["link"]."\n";
       $mail->Subject.=" ".$project["name"];
-      if ($config["template"])
+      if ($config["template"] AND !$existingprojectstate)
          {
          unset($institutionkey);
          $templateProcessor = new \PhpOffice\PhpWord\TemplateProcessor($config["template"]);
@@ -112,7 +123,7 @@ foreach($projects as $project)
          $templateProcessor->saveAs($config["tempdir"].$filename);
          echo 'File generated';
          }
-      if ($config["gdrive-clientid"])
+      if ($config["gdrive-clientid"] AND !$existingprojectstate)
          {
          $newfile = new Google_Service_Drive_DriveFile();
          $newfile->setTitle($config["subject"]." ".$project["name"]);
@@ -148,16 +159,11 @@ foreach($projects as $project)
          $mail->Body.="\nEdit: https://docs.google.com/document/d/".$createdfileid."/edit\n";
          echo ', uploaded to GDrive';
          }
-      if ($config["template"])
+      if ($config["template"] AND !$existingprojectstate)
          {
          unlink($config["tempdir"].$filename);
          }
-      if(!$mail->send())
-         {
-         echo ', email '.$mail->Subject.' could not be sent<br />';
-         echo 'Mailer Error: ' . $mail->ErrorInfo;
-         }
-      else
+      if ($mail->send())
          {
          echo ', email '.$mail->Subject.' has been sent';
          }
