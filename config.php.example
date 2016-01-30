@@ -20,6 +20,8 @@ $config["template"]='template.docx';
 $config["tempdir"]='tmp/';
 // CSV file with addresses to use for template, format: name|usedname|street|city|zip|email
 $config["addresses"]='example.csv';
+// CSV file with land to GPS mapping, format: parcela;long;lat
+$config["addresses"]='example-gps.csv';
 
 /** google drive details for file upload */
 // google drive client id - get it here (credentials): https://console.developers.google.com
@@ -32,5 +34,9 @@ $config["gdrive-keyfile"]='';
 $config["gdrive-folderid"]='';
 // google drive users to give "writer" permissions to
 $config["gdrive-users"]=array();
+
+/** website screenshot */
+// leave blank, if no screenshots are required, get it here: https://www.screenshotmachine.com/register.php?plan=free
+$config["screenshot-apikey"]='';
 
 ?>
