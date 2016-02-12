@@ -5,6 +5,7 @@
 </head>
 <body>
 <?php
+//define('DEBUG',1);
 ini_set('max_execution_time', 300);
 require('config.php');
 require('simple_html_dom.php');
@@ -76,6 +77,7 @@ foreach($html->find('tr') as $line)
       $projects[$i]["institution"]=trim($htmlchild->find('.table-list li',2)->getElementByTagName('span')->plaintext);
       $projects[$i]["proponent"]=trim($htmlchild->find('.table-list li',3)->getElementByTagName('span')->plaintext);
       $projects[$i]["proponentidnumber"]=trim($htmlchild->find('.table-list li',4)->getElementByTagName('span')->plaintext);
+      debug($projects[$i]["name"]);
       // if screenshot API key exists, make lots of additional effort
       if ($config["screenshot-apikey"])
          {
@@ -85,6 +87,7 @@ foreach($html->find('tr') as $line)
             if (strpos($text,'Oznámenie o predložení zámeru:')!==FALSE)
                {
                $infofile=$text->parent->parent->find('li',0)->find('a',0)->href;
+               debug('zamer');
 
                curl_setopt ($ch, CURLOPT_RETURNTRANSFER, 1);
                curl_setopt ($ch, CURLOPT_URL, 'https://www.enviroportal.sk'.$infofile);
@@ -93,6 +96,7 @@ foreach($html->find('tr') as $line)
                curl_setopt($ch, CURLOPT_NOBODY, 1);
                $content=curl_exec ($ch);
                $contenttype=curl_getinfo($ch, CURLINFO_CONTENT_TYPE);
+               debug($contenttype.' detected ');
                if ($contenttype=='application/rtf')
                   {
                   $rtfcontent=file_get_contents('https://www.enviroportal.sk'.$infofile);
@@ -114,6 +118,7 @@ foreach($html->find('tr') as $line)
          // basic info RTF exists, extract exact location and pull a screenshot
          if ($rtfcontent)
             {
+            debug('in rtf');
             $content=rtf2text($rtfcontent);
             $content=str_replace('?','',$content);
             $content=preg_replace_callback("/(&#[0-9]+;)/", function($m) { return mb_convert_encoding($m[1], "UTF-8", "HTML-ENTITIES"); }, $content);
@@ -176,6 +181,7 @@ foreach($html->find('tr') as $line)
                      }
                   }
                }
+            debug($location);
             /*
             if (!$long AND !$lat) echo('location not identified');
             echo $location;
@@ -206,6 +212,8 @@ foreach($html->find('tr') as $line)
 $mail->Body="";
 $existingprojectstate=0;
 
+debug('processing finished; starting mailing');
+
 foreach($projects as $project)
    {
    $mail->Subject = $config["subject"];
@@ -214,6 +222,7 @@ foreach($projects as $project)
    // arbitraty set number of existing (3) projects between already found project in the same state
    if ($hashkey AND $hashkey<count($hashes)-3) $existingprojectstate=1;
    //echo $project["name"],' ',$existingproject,' ',$hashkey;
+   debug('project '.$hash.' (hashkey '.$haskey.') exists? '.$existingprojectstate);
    if (!$hashkey OR $existingprojectstate)
       {
       file_put_contents('lasthash.txt',$hash."\n",FILE_APPEND);
@@ -227,6 +236,7 @@ foreach($projects as $project)
       // include screenshot in the email
       if ($config["screenshot-apikey"] AND isset($project["long"]) AND isset($project["lat"]))
          {
+         debug('getting screenshot');
          $mapimage=imagecreatefrompng('http://api.screenshotmachine.com/?key='.$config["screenshot-apikey"].'&size=F&format=PNG&cacheLimit=0&timeout=1000&url=http%3A%2F%2Flabs.strava.com%2Fheatmap%2F%2315%2F'.$long.'%2F'.$lat.'%2Fblue%2Fbike');
          $mapimagenew=imagecreatetruecolor(579,708);
          imagecopy($mapimagenew,$mapimage,0,0,445,60,1024,708);
@@ -259,7 +269,7 @@ foreach($projects as $project)
          $templateProcessor->setValue('ico',$project["proponentidnumber"]);
          $filename=uniqid().".docx";
          $templateProcessor->saveAs($config["tempdir"].$filename);
-         echo 'File generated';
+         debug('generating document');
          }
       if ($config["gdrive-clientid"] AND !$existingprojectstate)
          {
@@ -295,22 +305,28 @@ foreach($projects as $project)
                }
             }
          $mail->Body.="\nEdit: https://docs.google.com/document/d/".$createdfileid."/edit\n";
-         echo ', uploaded to GDrive';
+         debug('uploaded to GDrive');
          }
       if ($config["template"] AND !$existingprojectstate)
          {
          unlink($config["tempdir"].$filename);
          }
-      if ($mail->send())
+      try
          {
-         echo ', email '.$mail->Subject.' has been sent';
+         if ($mail->send())
+            {
+            debug('email '.$mail->Subject.' has been sent');
+            }
+         }
+      catch (phpmailerException $e)
+         {
+         debug('error sending mail: '.$e->errorMessage());
          }
       if ($config["screenshot-apikey"] AND isset($project["long"]) AND isset($project["lat"]))
          {
          unlink($config["tempdir"].$filename);
          }
       $mail->clearAttachments();
-      echo '<br />';
       }
    }
 

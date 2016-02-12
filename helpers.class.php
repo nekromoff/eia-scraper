@@ -46,4 +46,9 @@ function getClient()
 
 }
 
+function debug($message)
+{
+    if (DEBUG==1) echo $message,'<br />'; flush();
+}
+
 ?>
