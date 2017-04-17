@@ -26,7 +26,6 @@ class EIAController extends Controller
     }
 
     public function about() {
-        return $this->sendNotifications(1);
         return view('about');
     }
 
