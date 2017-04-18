@@ -65,6 +65,7 @@ class EIAController extends Controller
     public function sendNotifications($project_id) {
         $project=\App\Project::with('regions')->with('districts')->with('localities')->with('companies.company')->find($project_id);
         $watchers=\App\Watcher::get();
+        $notified_emails=[];
         foreach ($watchers as $watcher) {
             $notify=0;
             foreach($project->regions->pluck('name')->toArray() as $region) {
@@ -76,10 +77,11 @@ class EIAController extends Controller
             foreach($project->localities->pluck('name')->toArray() as $locality) {
                 if (stripos($locality,$watcher->search)!==FALSE) $notify=1;
             }
-            if ($notify) {
+            if ($notify and in_array($watcher->email,$notified_emails)===FALSE) {
                 $project->url=str_replace('/eia/','/sk/eia/',$project->url); // add /sk/ to URL
                 $project->url=str_replace('/print','',$project->url); // remove /print from URL
                 Mail::to($watcher->email)->send(new ProjectNotification($project));
+                $notified_emails[]=$watcher->email;
             }
         }
     }
