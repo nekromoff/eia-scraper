@@ -115,13 +115,13 @@ class EIAController extends Controller
             if (isset($region)) {
                 $parts=explode("\n",trim($region));
                 foreach ($parts as $part) {
-                    $found[$i]['region'][]=trim($part);
+                    if (trim($part)) $found[$i]['region'][]=trim($part);
                 }
             }
             if (isset($district)) {
                 $parts=explode("\n",trim($district));
                 foreach ($parts as $part) {
-                    $found[$i]['district'][]=trim($part);
+                    if (trim($part)) $found[$i]['district'][]=trim($part);
                 }
             }
             $found[$i]['type']=$industry;
@@ -147,15 +147,14 @@ class EIAController extends Controller
                     if (strpos($matches[1],"\n")!==FALSE) $parts=explode("\n",trim($matches[1]));
                     else $parts=explode(",",trim($matches[1]));
                     foreach ($parts as $part) {
-                        $part=trim($part);
-                        if ($part) $found[$i]['locality'][]=trim($part);
+                        if (trim($part)) $found[$i]['locality'][]=trim($part);
                     }
                 }
                 preg_match('/Príslušný orgán:(.+)Navrhovateľ:/s', $node->text(), $matches);
                 if (isset($matches[1])) {
                     $parts=explode("\n",trim($matches[1]));
                     foreach ($parts as $part) {
-                        $found[$i]['institution']['primary'][]=trim($part);
+                        if (trim($part)) $found[$i]['institution']['primary'][]=trim($part);
                     }
                 }
                 preg_match('/Navrhovateľ:(.+)/', $node->text(), $matches);
@@ -166,7 +165,7 @@ class EIAController extends Controller
                 if (isset($matches[1])) {
                     $parts=explode("\n",trim($matches[1]));
                     foreach ($parts as $part) {
-                        $found[$i]['institution']['primary'][]=trim($part);
+                        if (trim($part)) $found[$i]['institution']['primary'][]=trim($part);
                     }
                 }
                 preg_match('/Obstarávateľ:(.+)/', $node->text(), $matches);
@@ -177,28 +176,28 @@ class EIAController extends Controller
                 if (isset($matches[1])) {
                     $parts=explode("\n",trim($matches[1]));
                     foreach ($parts as $part) {
-                        $found[$i]['institution']['secondary'][]=trim($part);
+                        if (trim($part)) $found[$i]['institution']['secondary'][]=trim($part);
                     }
                 }
                 preg_match('/Schvaľujúci orgán:(.*)Dokumenty/s', $node->text(), $matches);
                 if (isset($matches[1])) {
                     $parts=explode("\n",trim($matches[1]));
                     foreach ($parts as $part) {
-                        $found[$i]['institution']['secondary'][]=trim($part);
+                        if (trim($part)) $found[$i]['institution']['secondary'][]=trim($part);
                     }
                 }
                 preg_match('/Strana pôvodu(.+)/', $node->text(), $matches);
                 if (isset($matches[1])) {
                     $parts=explode("\n",trim($matches[1]));
                     foreach ($parts as $part) {
-                        $found[$i]['stakeholder']['primary'][]=trim($part);
+                        if (trim($part)) $found[$i]['stakeholder']['primary'][]=trim($part);
                     }
                 }
                 preg_match('/Dotknutá strana(.+)/', $node->text(), $matches);
                 if (isset($matches[1])) {
                     $parts=explode("\n",trim($matches[1]));
                     foreach ($parts as $part) {
-                        $found[$i]['stakeholder']['secondary'][]=trim($part);
+                        if (trim($part)) $found[$i]['stakeholder']['secondary'][]=trim($part);
                     }
                 }
                 preg_match('/Dátum zverejnenia zámeru(.+)/', $node->text(), $matches);
