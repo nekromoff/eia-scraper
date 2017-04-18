@@ -66,8 +66,17 @@ class EIAController extends Controller
         $project=\App\Project::with('regions')->with('districts')->with('localities')->with('companies.company')->find($project_id);
         $watchers=\App\Watcher::get();
         foreach ($watchers as $watcher) {
-            if (in_array($watcher->search,$project->regions->pluck('name')->toArray()) OR in_array($watcher->search,$project->districts->pluck('name')->toArray()) OR in_array($watcher->search,$project->localities->pluck('name')->toArray())) {
-                //echo $watcher->search.' in array, notify: '.$watcher->email,'<br />';
+            $notify=0;
+            foreach($project->regions->pluck('name')->toArray() as $region) {
+                if (stripos($region,$watcher->search)!==FALSE) $notify=1;
+            }
+            foreach($project->districts->pluck('name')->toArray() as $district) {
+                if (stripos($district,$watcher->search)!==FALSE) $notify=1;
+            }
+            foreach($project->localities->pluck('name')->toArray() as $locality) {
+                if (stripos($locality,$watcher->search)!==FALSE) $notify=1;
+            }
+            if ($notify) {
                 $project->url=str_replace('/eia/','/sk/eia/',$project->url); // add /sk/ to URL
                 $project->url=str_replace('/print','',$project->url); // remove /print from URL
                 Mail::to($watcher->email)->send(new ProjectNotification($project));
