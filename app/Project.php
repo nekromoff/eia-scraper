@@ -14,7 +14,7 @@ class Project extends Model
 
     public function institutions()
     {
-        return $this->hasMany('App\ProjectInstitution');
+        return $this->hasMany('App\ProjectsInstitution');
     }
 
     public function regions()

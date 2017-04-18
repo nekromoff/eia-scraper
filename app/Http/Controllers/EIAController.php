@@ -86,6 +86,11 @@ class EIAController extends Controller
         }
     }
 
+    public function debugProject(Request $request) {
+        $project=\App\Project::with('regions')->with('districts')->with('localities')->with('companies.company')->with('institutions.institution')->find($request->id);
+        return dd($project);
+    }
+
     public function retrieveData($searchparams='') {
         // search[country]=1
         // $parameters='search[country]=1';

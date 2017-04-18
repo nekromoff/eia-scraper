@@ -10,4 +10,9 @@ class ProjectsInstitution extends Model
     {
         return $this->belongsTo('App\Project');
     }
+
+    public function institution()
+    {
+        return $this->belongsTo('App\Institution');
+    }
 }
