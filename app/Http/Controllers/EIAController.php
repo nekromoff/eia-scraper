@@ -447,7 +447,7 @@ class EIAController extends Controller
     private function updateContentTypes() {
         $documents=\App\Document::where('mimefiletype','_unknown')->get();
         foreach ($documents as $document) {
-            echo $document->url,'<br />'; flush(); ob_flush();
+            //echo $document->url,'<br />'; flush(); ob_flush();
             $response=Guzzle::head('http://www.enviroportal.sk'.$document->url);
             $contenttype=$response->getHeader('content-type');
             // fix broken reporting by server - ZIP is served as HTML:
@@ -458,11 +458,3 @@ class EIAController extends Controller
     }
 
 }
-
-/*
-
-Kraje:
-search[country]
-<option value="0">Celoštátny dosah</option><option value="6">Banskobystrický</option><option value="1" selected="selected">Bratislavský</option><option value="8">Košický</option><option value="4">Nitriansky</option><option value="7">Prešovský</option><option value="3">Trenčiansky</option><option value="2">Trnavský</option><option value="5">Žilinský</option></select>
-
-    */
