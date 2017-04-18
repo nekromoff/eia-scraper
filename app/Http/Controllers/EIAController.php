@@ -95,6 +95,15 @@ class EIAController extends Controller
         // search[country]=1
         // $parameters='search[country]=1';
         $crawler=Goutte::request('GET', 'http://www.enviroportal.sk/sk/eia/print');
+        $fingerprint=sha1($crawler->html());
+        $systemstate=\App\Systemstate::where('key','fingerprint')->first();
+        // if matching fingerprint exists, skip further data retrieval
+        if (isset($systemstate->value)) {
+            return;
+        }
+        else { // update fingerprint
+            $systemstate=\App\Systemstate::updateOrCreate(['key' => 'fingerprint'], ['value' => $fingerprint]);
+        }
         $i=0; $found=array();
         $crawler->filter('tr:not(.head)')->each(function ($line) use (&$i, &$found) {
             $cells=$line->children()->extract('_text');
