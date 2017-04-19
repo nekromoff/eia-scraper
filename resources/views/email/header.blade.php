@@ -50,6 +50,7 @@
         /* makes it centered */
         max-width: 980px;
         padding: 10px;
+        padding-top: 2px;
         width: auto !important;
         width: 980px; }
 
@@ -59,7 +60,8 @@
         display: block;
         Margin: 0 auto;
         max-width: 980px;
-        padding: 10px; }
+        padding: 10px;
+        padding-top: 5px; }
 
       /* -------------------------------------
           HEADER, FOOTER, MAIN
@@ -71,7 +73,7 @@
 
       .wrapper {
         box-sizing: border-box;
-        padding: 20px; }
+        padding: 10px; }
 
       .footer {
         clear: both;
@@ -82,7 +84,7 @@
         .footer p,
         .footer span,
         .footer a {
-          color: #999999;
+          color: #555;
           font-size: 12px;
           text-align: center; }
 
@@ -101,7 +103,7 @@
         Margin-bottom: 30px; }
 
       h1 {
-        font-size: 35px;
+        font-size: 20px;
         font-weight: 700;
         text-align: center; }
 

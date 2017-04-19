@@ -16,10 +16,14 @@
                     ,
                 @endif
             @endforeach
-            Stav: *{{ $project->status }}*<br />
+            Stav: <strong>{{ $project->status }}</strong><br />
             Typ: {{ $project->type }}<br /><br />
             {{ $project->description }}<br /><br />
-            URL: {{ $project->url }}
+            URL: {{ $project->url }}<br /><br/>
+            <strong>Súvisiace dokumenty:</strong>
+            @foreach ($project->documents as $document)
+                {{ $document->name }}: {{ $document->url }}<br />
+            @endforeach
             </span>
             <table class="main">
 
@@ -53,5 +57,24 @@
                         {{ $project->description }}
                         </p>
                         <p><a href="{{ $project->url }}">{{ $project->url }}</a></p>
-
+                        <p><strong>Súvisiace dokumenty:</strong></p>
+                        <ul>
+                        @foreach ($project->documents as $document)
+                            <li><a href="http://www.enviroportal.sk{{ $document->url }}">{{ $document->name }}</a>
+                            @if ($document->mimefiletype=='application/pdf')
+                                (PDF)
+                            @elseif ($document->mimefiletype=='application/rtf')
+                                (RTF)
+                            @elseif ($document->mimefiletype=='application/msword')
+                                (DOC)
+                            @elseif ($document->mimefiletype=='application/msexcel')
+                                (XLS)
+                            @elseif ($document->mimefiletype=='images/jpeg')
+                                (JPG)
+                            @elseif ($document->mimefiletype=='application/zip')
+                                (ZIP)
+                            @endif
+                            </li>
+                        @endforeach
+                        </ul>
 @include('email.footer')

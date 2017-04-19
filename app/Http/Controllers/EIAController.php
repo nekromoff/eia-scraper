@@ -63,7 +63,7 @@ class EIAController extends Controller
     }
 
     public function sendNotifications($project_id) {
-        $project=\App\Project::with('regions')->with('districts')->with('localities')->with('companies.company')->find($project_id);
+        $project=\App\Project::with('regions')->with('districts')->with('localities')->with('companies.company')->with('documents')->find($project_id);
         $watchers=\App\Watcher::get();
         $notified_emails=[];
         foreach ($watchers as $watcher) {
@@ -87,7 +87,7 @@ class EIAController extends Controller
     }
 
     public function debugProject(Request $request) {
-        $project=\App\Project::with('regions')->with('districts')->with('localities')->with('companies.company')->with('institutions.institution')->find($request->id);
+        $project=\App\Project::with('regions')->with('districts')->with('localities')->with('companies.company')->with('institutions.institution')->with('stakeholders.stakeholder')->with('documents')->find($request->id);
         return dd($project);
     }
 
@@ -398,7 +398,7 @@ class EIAController extends Controller
 
                 if (isset($item['stakeholder']['primary'])) {
                     foreach ($item['stakeholder']['primary'] as $stakeholdername) {
-                        $stakeholder=\App\ProjectsStakeholder::where('name',$stakeholdername)->first();
+                        $stakeholder=\App\ProjectsStakeholder::with('stakeholder')->where('name',$stakeholdername)->first();
                         if (isset($stakeholder->id)) {
                             $projectstakeholder=new \App\ProjectsStakeholder;
                             $projectstakeholder->project_id=$project->id;

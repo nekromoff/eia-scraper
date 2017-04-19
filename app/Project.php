@@ -17,6 +17,11 @@ class Project extends Model
         return $this->hasMany('App\ProjectsInstitution');
     }
 
+    public function stakeholders()
+    {
+        return $this->hasMany('App\ProjectsStakeholder');
+    }
+
     public function regions()
     {
         return $this->hasMany('App\ProjectsRegion');

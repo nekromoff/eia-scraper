@@ -13,7 +13,7 @@
               <table border="0" cellpadding="0" cellspacing="0">
                 <tr>
                   <td class="content-block">
-                    Web: <a href="https://eia.cyklokoalicia.sk">Nástroj Sleduj EIA</a>
+                    Tento email dostávate, lebo ste sa prihlásili na odber upozornení na webe <a href="https://eia.cyklokoalicia.sk">Sleduj EIA</a>.
                   </td>
                 </tr>
                 <tr>
