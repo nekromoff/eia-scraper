@@ -7,6 +7,7 @@
 <div class="col-md-8">
 @if (session('message'))
     <div class="alert alert-success"><span class="glyphicon glyphicon-ok"></span> {{ session('message') }}</div>
+    <script>dataLayer.push({'event': 'subscribed'});</script>
 @else
     <p>Sleduj EIA je projekt, ktorý umožňuje posielať notifikácie emailom o projektoch s dopadom na vaše životné prostredie.</p>
 @endif

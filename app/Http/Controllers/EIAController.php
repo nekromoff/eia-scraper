@@ -98,7 +98,7 @@ class EIAController extends Controller
         $fingerprint=sha1($crawler->html());
         $systemstate=\App\Systemstate::where('key','fingerprint')->first();
         // if matching fingerprint exists, skip further data retrieval
-        if (isset($systemstate->value)) {
+        if (isset($systemstate->value) AND $fingerprint==$systemstate->value) {
             return;
         }
         else { // update fingerprint
