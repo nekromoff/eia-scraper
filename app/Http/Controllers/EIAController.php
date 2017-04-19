@@ -53,12 +53,42 @@ class EIAController extends Controller
         else {
             $locality=\App\Watchoption::find($request->locality);
             $locality->name=str_replace(' kraj','',$locality->name);
-            $watcher->search = $locality->name;
+            $watcher->search=$locality->name;
         }
 
         $watcher->save();
 
-        return redirect()->route('index')->with('message', 'Budeme vám zasielať upozornenia na '.$watcher->email.' pre lokalitu: '.$watcher->search.'.');
+        $notifycount=0;
+        $projects=\App\Project::with('regions')->with('districts')->with('localities')->with('companies.company')->with('documents')->where('updated_at', '>=', \Carbon\Carbon::now()->subDays(15))->get();
+        foreach ($projects as $project) {
+            $notify=0;
+            foreach($project->regions->pluck('name')->toArray() as $region) {
+                if (stripos($region,$watcher->search)!==FALSE) $notify=1;
+            }
+            foreach($project->districts->pluck('name')->toArray() as $district) {
+                if (stripos($district,$watcher->search)!==FALSE) $notify=1;
+            }
+            foreach($project->localities->pluck('name')->toArray() as $locality) {
+                if (stripos($locality,$watcher->search)!==FALSE) $notify=1;
+            }
+            if ($notify) {
+                $project->url=str_replace('/eia/','/sk/eia/',$project->url); // add /sk/ to URL
+                $project->url=str_replace('/print','',$project->url); // remove /print from URL
+                Mail::to($watcher->email)->send(new ProjectNotification($project));
+                $notifycount++;
+            }
+        }
+
+        $message='Budeme vám zasielať upozornenia na '.$watcher->email.' pre lokalitu: '.$watcher->search.'.';
+        if ($notifycount>0) {
+            $message.=' Tiež sme vám poslali upozornenia na '.$notifycount;
+            if ($notifycount==1) $message.=' projekt';
+            if ($notifycount>=2 AND $notifycount<=4) $message.=' projekty';
+            if ($notifycount>=5) $message.=' projektov';
+            $message.='EIA, ktoré boli pridané za posledných 15 dní a vyhovujú vašej požiadavke.';
+        }
+
+        return redirect()->route('index')->with('message', $message);
 
     }
 
