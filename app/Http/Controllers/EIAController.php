@@ -85,7 +85,7 @@ class EIAController extends Controller
             if ($notifycount==1) $message.=' projekt';
             if ($notifycount>=2 AND $notifycount<=4) $message.=' projekty';
             if ($notifycount>=5) $message.=' projektov';
-            $message.='EIA, ktoré boli pridané za posledných 15 dní a vyhovujú vašej požiadavke.';
+            $message.=' EIA, ktoré boli pridané za posledných 15 dní a vyhovujú vašej požiadavke.';
         }
 
         return redirect()->route('index')->with('message', $message);
