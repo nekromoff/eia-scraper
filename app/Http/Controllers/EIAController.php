@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 use Mail;
 use Guzzle;
 use Goutte;
@@ -75,6 +76,7 @@ class EIAController extends Controller
                 $project->url=str_replace('/eia/','/sk/eia/',$project->url); // add /sk/ to URL
                 $project->url=str_replace('/print','',$project->url); // remove /print from URL
                 Mail::to($watcher->email)->send(new ProjectNotification($project));
+                Log::info('Notifying '.$watcher->email.': '.$project->name);
                 $notifycount++;
             }
         }
@@ -111,6 +113,7 @@ class EIAController extends Controller
                 $project->url=str_replace('/eia/','/sk/eia/',$project->url); // add /sk/ to URL
                 $project->url=str_replace('/print','',$project->url); // remove /print from URL
                 Mail::to($watcher->email)->send(new ProjectNotification($project));
+                Log::info('Notifying '.$watcher->email.': '.$project->name);
                 $notified_emails[]=$watcher->email;
             }
         }
