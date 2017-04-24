@@ -49,35 +49,42 @@ class EIAController extends Controller
         }
 
         $watcher = new Watcher;
-        $watcher->email = $request->email;
+        $watcher->email = strtolower($request->email);
         if (isset($request->otherlocality)) $watcher->search = $request->otherlocality;
         else {
             $locality=\App\Watchoption::find($request->locality);
-            $locality->name=str_replace(' kraj','',$locality->name);
+            $locality->name=str_ireplace(' kraj','',$locality->name);
             $watcher->search=$locality->name;
         }
 
-        $watcher->save();
+        $watcher->search=trim(ucwords($watcher->search));
+
+        $existingwatcher=\App\Watcher::where('email', $watcher->email)->where('search', $watcher->search)->first();
 
         $notifycount=0;
-        $projects=\App\Project::with('regions')->with('districts')->with('localities')->with('companies.company')->with('documents')->where('updated_at', '>=', \Carbon\Carbon::now()->subDays(15))->get();
-        foreach ($projects as $project) {
-            $notify=0;
-            foreach($project->regions->pluck('name')->toArray() as $region) {
-                if (stripos($region,$watcher->search)!==FALSE) $notify=1;
-            }
-            foreach($project->districts->pluck('name')->toArray() as $district) {
-                if (stripos($district,$watcher->search)!==FALSE) $notify=1;
-            }
-            foreach($project->localities->pluck('name')->toArray() as $locality) {
-                if (stripos($locality,$watcher->search)!==FALSE) $notify=1;
-            }
-            if ($notify) {
-                $project->url=str_replace('/eia/','/sk/eia/',$project->url); // add /sk/ to URL
-                $project->url=str_replace('/print','',$project->url); // remove /print from URL
-                Mail::to($watcher->email)->send(new ProjectNotification($project));
-                Log::info('Notifying '.$watcher->email.': '.$project->name);
-                $notifycount++;
+        // create new watcher only if it already does not exist
+        if (!isset($existingwatcher)) {
+            $watcher->save();
+
+            $projects=\App\Project::with('regions')->with('districts')->with('localities')->with('companies.company')->with('documents')->where('updated_at', '>=', \Carbon\Carbon::now()->subDays(15))->get();
+            foreach ($projects as $project) {
+                $notify=0;
+                foreach($project->regions->pluck('name')->toArray() as $region) {
+                    if (stripos($region,$watcher->search)!==FALSE) $notify=1;
+                }
+                foreach($project->districts->pluck('name')->toArray() as $district) {
+                    if (stripos($district,$watcher->search)!==FALSE) $notify=1;
+                }
+                foreach($project->localities->pluck('name')->toArray() as $locality) {
+                    if (stripos($locality,$watcher->search)!==FALSE) $notify=1;
+                }
+                if ($notify) {
+                    $project->url=str_replace('/eia/','/sk/eia/',$project->url); // add /sk/ to URL
+                    $project->url=str_replace('/print','',$project->url); // remove /print from URL
+                    Mail::to($watcher->email)->send(new ProjectNotification($project));
+                    Log::info('Notifying '.$watcher->email.': '.$project->name);
+                    $notifycount++;
+                }
             }
         }
 
@@ -386,24 +393,31 @@ class EIAController extends Controller
                     $locality->save();
                 }
 
-                foreach ($item['institution']['primary'] as $institutionname) {
-                    $institution=\App\Institution::where('name',$institutionname)->first();
-                    if (isset($institution->id)) {
-                        $projectinstitution=new \App\ProjectsInstitution;
-                        $projectinstitution->project_id=$project->id;
-                        $projectinstitution->institution_id=$institution->id;
-                        $projectinstitution->type='primary';
-                        $projectinstitution->save();
-                    }
-                    else {
-                        $institution=new \App\Institution;
-                        $institution->name=$institutionname;
-                        $institution->save();
-                        $projectinstitution=new \App\ProjectsInstitution;
-                        $projectinstitution->project_id=$project->id;
-                        $projectinstitution->institution_id=$institution->id;
-                        $projectinstitution->type='primary';
-                        $projectinstitution->save();
+                /** based on: http://www.enviroportal.sk/eia/detail/uzemny-plan-zony-technologicky-park-cepit-bratislava-vajnory/print
+                 *  not all EIA projects have to have primary institution, which is weird, but...
+                 *  therefore isset condition added
+                 *  2017-04-24
+                 */
+                if (isset($item['institution']['primary'])) {
+                    foreach ($item['institution']['primary'] as $institutionname) {
+                        $institution=\App\Institution::where('name',$institutionname)->first();
+                        if (isset($institution->id)) {
+                            $projectinstitution=new \App\ProjectsInstitution;
+                            $projectinstitution->project_id=$project->id;
+                            $projectinstitution->institution_id=$institution->id;
+                            $projectinstitution->type='primary';
+                            $projectinstitution->save();
+                        }
+                        else {
+                            $institution=new \App\Institution;
+                            $institution->name=$institutionname;
+                            $institution->save();
+                            $projectinstitution=new \App\ProjectsInstitution;
+                            $projectinstitution->project_id=$project->id;
+                            $projectinstitution->institution_id=$institution->id;
+                            $projectinstitution->type='primary';
+                            $projectinstitution->save();
+                        }
                     }
                 }
                 if (isset($item['institution']['secondary'])) {
