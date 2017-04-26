@@ -445,7 +445,7 @@ class EIAController extends Controller
 
                 if (isset($item['stakeholder']['primary'])) {
                     foreach ($item['stakeholder']['primary'] as $stakeholdername) {
-                        $stakeholder=\App\ProjectsStakeholder::with('stakeholder')->where('name',$stakeholdername)->first();
+                        $stakeholder=\App\Stakeholder::where('name',$stakeholdername)->first();
                         if (isset($stakeholder->id)) {
                             $projectstakeholder=new \App\ProjectsStakeholder;
                             $projectstakeholder->project_id=$project->id;
@@ -467,7 +467,7 @@ class EIAController extends Controller
                 }
                 if (isset($item['stakeholder']['secondary'])) {
                     foreach ($item['stakeholder']['secondary'] as $stakeholdername) {
-                        $stakeholder=\App\ProjectsStakeholder::where('name',$stakeholdername)->first();
+                        $stakeholder=\App\Stakeholder::where('name',$stakeholdername)->first();
                         if (isset($stakeholder->id)) {
                             $projectstakeholder=new \App\ProjectsStakeholder;
                             $projectstakeholder->project_id=$project->id;
