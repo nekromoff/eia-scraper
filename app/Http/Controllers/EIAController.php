@@ -363,13 +363,15 @@ class EIAController extends Controller
                     $projectcompany->save();
                 }
 
-                foreach ($item['doc'] as $documentdetails) {
-                    $document=new \App\Document;
-                    $document->project_id=$project->id;
-                    $document->name=$documentdetails['name'];
-                    $document->url=$documentdetails['url'];
-                    $document->mimefiletype='_unknown';
-                    $document->save();
+                if (isset($items['doc'])) {
+                    foreach ($item['doc'] as $documentdetails) {
+                        $document=new \App\Document;
+                        $document->project_id=$project->id;
+                        $document->name=$documentdetails['name'];
+                        $document->url=$documentdetails['url'];
+                        $document->mimefiletype='_unknown';
+                        $document->save();
+                    }
                 }
 
                 foreach ($item['region'] as $regionname) {
@@ -495,16 +497,18 @@ class EIAController extends Controller
                 $project->hash=$item['hash'];
                 $project->save();
 
-                foreach ($item['doc'] as $documentdetails) {
-                    $document=\App\Document::where('url',$documentdetails['url'])->first();
-                    // create document, if it does not exist
-                    if (!isset($document->id)) {
-                        $document=new \App\Document;
-                        $document->project_id=$project->id;
-                        $document->name=$documentdetails['name'];
-                        $document->url=$documentdetails['url'];
-                        $document->mimefiletype='_unknown';
-                        $document->save();
+                if (isset($item['doc'])) {
+                    foreach ($item['doc'] as $documentdetails) {
+                        $document=\App\Document::where('url',$documentdetails['url'])->first();
+                        // create document, if it does not exist
+                        if (!isset($document->id)) {
+                            $document=new \App\Document;
+                            $document->project_id=$project->id;
+                            $document->name=$documentdetails['name'];
+                            $document->url=$documentdetails['url'];
+                            $document->mimefiletype='_unknown';
+                            $document->save();
+                        }
                     }
                 }
 
