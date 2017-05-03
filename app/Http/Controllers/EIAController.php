@@ -139,6 +139,7 @@ class EIAController extends Controller
         $systemstate=\App\Systemstate::where('key','fingerprint')->first();
         // if matching fingerprint exists, skip further data retrieval
         if (isset($systemstate->value) AND $fingerprint==$systemstate->value) {
+            echo 'fingerprint match; skipping';
             return;
         }
         else { // update fingerprint
@@ -316,11 +317,6 @@ class EIAController extends Controller
             });
             // create hash from serialized string containing URL, status and existing docs
             $found[$i]['hash']=sha1(serialize($found[$i]['url']).serialize($found[$i]['status']).serialize($found[$i]['doc']));
-            $project=\App\Project::where('hash',$found[$i]['hash'])->first();
-            // if project already exists, remove it from queue
-            if (isset($project->id)) {
-                unset($found[$i]);
-            }
             $i++;
         });
 
