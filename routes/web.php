@@ -13,6 +13,7 @@
 
 Route::get('/', ['uses' => 'EIAController@index', 'as' => 'index']);
 Route::get('projekt', ['uses' => 'EIAController@about', 'as' => 'about']);
+Route::get('odhlas/{email}/{hash}/{watcherid?}', ['uses' => 'EIAController@unsubscribe', 'as' => 'unsubscribe']);
 Route::post('sleduj', ['uses' => 'EIAController@storeForm', 'as' => 'store']);
 
 Route::get('cron/get', ['uses' => 'EIAController@get', 'as' => 'get']);

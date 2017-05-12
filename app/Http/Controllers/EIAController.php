@@ -39,6 +39,17 @@ class EIAController extends Controller
         $this->updateContentTypes();
     }
 
+    function unsubscribe(Request $request)
+    {
+        $all=false;
+        $existingwatcher=\App\Watcher::where('id', $request->watcherid)->where('email', $request->email)->first();
+        if (!isset($existingwatcher->id)) return redirect()->route('index')->with('error', 'Nevieme vás odhlásiť, lebo email '.$request->email.' sme nenašli. Asi ste sa už odhlásili v minulosti.');
+        $hash=sha1($existingwatcher->id.$existingwatcher->search.$existingwatcher->created_at);
+        if ($request->hash!=$hash) return redirect()->route('index')->with('error', 'Nevieme vás odhlásiť, lebo odkaz na odhlásenie nie je funkčný. Skúste ho skopírovať ešte raz v celej dĺžke alebo kliknúť na odhlásenie priamo z emailu.');
+        \App\Watcher::destroy($request->watcherid);
+        return redirect()->route('index')->with('message', 'Úspešne sme odhlásili váš email '.$request->email.' z EIA notifikácií pre lokalitu: '.$existingwatcher->search.'.');
+    }
+
     public function storeForm(FormBuilder $formBuilder, Request $request)
     {
 
@@ -66,7 +77,7 @@ class EIAController extends Controller
         if (!isset($existingwatcher)) {
             $watcher->save();
 
-            $projects=\App\Project::with('regions')->with('districts')->with('localities')->with('companies.company')->with('documents')->where('updated_at', '>=', \Carbon\Carbon::now()->subDays(15))->get();
+            $projects=\App\Project::with('regions')->with('districts')->with('localities')->with('companies.company')->with('documents')->where('updated_at', '>=', \Carbon\Carbon::now()->subDays(7))->get();
             foreach ($projects as $project) {
                 $notify=0;
                 foreach($project->regions->pluck('name')->toArray() as $region) {
@@ -81,6 +92,8 @@ class EIAController extends Controller
                 if ($notify) {
                     $project->url=str_replace('/eia/','/sk/eia/',$project->url); // add /sk/ to URL
                     $project->url=str_replace('/print','',$project->url); // remove /print from URL
+                    $hash=sha1($watcher->id.$watcher->search.$watcher->created_at);
+                    $project->setAttribute('unsubscribelinkloc',route('unsubscribe', [$watcher->email, $hash, $watcher->id]));
                     Mail::to($watcher->email)->send(new ProjectNotification($project));
                     Log::info('Notifying '.$watcher->email.': '.$project->name);
                     $notifycount++;
@@ -94,7 +107,7 @@ class EIAController extends Controller
             if ($notifycount==1) $message.=' projekt';
             if ($notifycount>=2 AND $notifycount<=4) $message.=' projekty';
             if ($notifycount>=5) $message.=' projektov';
-            $message.=' EIA, ktoré boli pridané za posledných 15 dní a vyhovujú vašej požiadavke.';
+            $message.=' EIA, ktoré boli pridané za posledných 7 dní a vyhovujú vašej požiadavke.';
         }
 
         return redirect()->route('index')->with('message', $message);
@@ -130,7 +143,23 @@ class EIAController extends Controller
         $project=\App\Project::with('regions')->with('districts')->with('localities')->with('companies.company')->with('institutions.institution')->with('stakeholders.stakeholder')->with('documents')->find($request->id);
         return dd($project);
     }
-
+/*
+    public function refreshFiles() {
+        $crawler=Goutte::request('GET', 'http://www.enviroportal.sk/sk/eia/print');
+        $crawler->filter('tr:not(.head)')->each(function ($line) use (&$i, &$found) {
+            $url='http://www.enviroportal.sk'.str_replace('/sk/','/',$line->filter('a')->attr('href')).'/print';
+            $detail=Goutte::request('GET', $url);
+            $o=0;
+            $detail->filter('a')->each(function ($node) use (&$i, &$found, &$o) {
+                if (strpos($node->attr('href'), 'eia/dokument')!==FALSE) {
+                    $found[$i]['doc'][$o]['name']=trim($node->text());
+                    $found[$i]['doc'][$o]['url']=trim($node->attr('href'));
+                    $o++;
+                }
+            });
+        }
+    }
+*/
     public function retrieveData($searchparams='') {
         // search[country]=1
         // $parameters='search[country]=1';
@@ -317,6 +346,12 @@ class EIAController extends Controller
             });
             // create hash from serialized string containing URL, status and existing docs
             $found[$i]['hash']=sha1(serialize($found[$i]['url']).serialize($found[$i]['status']).serialize($found[$i]['doc']));
+            // TODO: keep updated projects in queue
+            $project=\App\Project::where('hash',$found[$i]['hash'])->first();
+            // if project already exists, remove it from queue
+            if (isset($project->id)) {
+                unset($found[$i]);
+            }
             $i++;
         });
 
@@ -455,7 +490,7 @@ class EIAController extends Controller
                             $stakeholder=new \App\Stakeholder;
                             $stakeholder->name=$stakeholdername;
                             $stakeholder->save();
-                            $projectstakeholder=new \App\ProjectStakeholder;
+                            $projectstakeholder=new \App\ProjectsStakeholder;
                             $projectstakeholder->project_id=$project->id;
                             $projectstakeholder->stakeholder_id=$stakeholder->id;
                             $projectstakeholder->type='primary';

@@ -13,7 +13,8 @@
               <table border="0" cellpadding="0" cellspacing="0">
                 <tr>
                   <td class="content-block">
-                    Tento email dostávate, lebo ste sa prihlásili na odber upozornení na webe <a href="https://eia.cyklokoalicia.sk">Sleduj EIA</a>.
+                    <p><strong>Tento email dostávate, lebo ste sa prihlásili na odber upozornení na webe <a href="https://eia.cyklokoalicia.sk">Sleduj EIA</a>.</strong></p>
+                    <p><a href="{{ $project->unsubscribelinkloc }}" title="Zrušenie odberu upozornení pre danú lokalitu">Odhlásenie z odberu upozornení pre túto lokalitu</a>.</p>
                   </td>
                 </tr>
                 <tr>
