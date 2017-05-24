@@ -132,6 +132,8 @@ class EIAController extends Controller
                 if (stripos($locality,$watcher->search)!==FALSE) $notify=1;
             }
             if ($notify and in_array($watcher->email,$notified_emails)===FALSE) {
+                $hash=sha1($watcher->id.$watcher->search.$watcher->created_at);
+                $project->setAttribute('unsubscribelinkloc',route('unsubscribe', [$watcher->email, $hash, $watcher->id]));
                 Mail::to($watcher->email)->send(new ProjectNotification($project));
                 Log::info('Notifying '.$watcher->email.': '.$project->name);
                 $notified_emails[]=$watcher->email;
