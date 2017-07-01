@@ -346,6 +346,7 @@ class EIAController extends Controller
                     $o++;
                 }
             });
+            if (!isset($found[$i]['doc'])) $found[$i]['doc']=array();
             // create hash from serialized string containing URL, status and existing docs
             $found[$i]['hash']=sha1(serialize($found[$i]['url']).serialize($found[$i]['status']).serialize($found[$i]['doc']));
             // TODO: keep updated projects in queue
@@ -414,11 +415,13 @@ class EIAController extends Controller
                     $region->save();
                 }
 
-                foreach ($item['district'] as $districtname) {
-                    $district=new \App\ProjectsDistrict;
-                    $district->project_id=$project->id;
-                    $district->name=$districtname;
-                    $district->save();
+                if (isset($district)) {
+                    foreach ($item['district'] as $districtname) {
+                        $district=new \App\ProjectsDistrict;
+                        $district->project_id=$project->id;
+                        $district->name=$districtname;
+                        $district->save();
+                    }
                 }
 
                 foreach ($item['locality'] as $localityname) {
