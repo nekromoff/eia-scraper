@@ -173,7 +173,7 @@ class EIAController extends Controller
             }
         }
     }
-
+    /*
     public function debugProject(Request $request)
     {
         while (1) {
@@ -183,6 +183,7 @@ class EIAController extends Controller
         }
         return dd($project);
     }
+    */
 /*
 public function refreshFiles() {
 $crawler=Goutte::request('GET', 'http://www.enviroportal.sk/sk/eia/print');
