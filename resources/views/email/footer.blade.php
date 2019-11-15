@@ -19,7 +19,7 @@
                 </tr>
                 <tr>
                   <td class="content-block powered-by">
-                    <small>Powered by: Cyklokoalícia</small>
+                    <small>Službu poskytuje Cyklokoalícia. <strong>Ak chcete, aby sme službu prevádzkovali aj naďalej, podporte nás sumou 10+€ na účet: SK9683300000002700175046 (variabilný symbol 0314 alebo poznámka EIA).</strong></small>
                   </td>
                 </tr>
               </table>

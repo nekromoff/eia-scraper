@@ -18,7 +18,7 @@ class CreateInitialTables extends Migration
             $table->unsignedInteger('company_id')->references('id')->on('companies');
             $table->unsignedInteger('institution_id')->references('id')->on('institutions');
             $table->unsignedInteger('stakeholder_id')->references('id')->on('stakeholders');
-            $table->text('name');
+            $table->string('name');
             $table->text('url');
             $table->string('act');
             $table->string('type');
