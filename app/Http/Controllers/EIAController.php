@@ -73,7 +73,8 @@ class EIAController extends Controller
         $watcher = new Watcher;
         $watcher->email = strtolower($request->email);
         if (isset($request->otherlocality)) {
-            $watcher->search = $request->otherlocality;
+            $ignored_characters = ['"'];
+            $watcher->search = str_replace($ignored_characters, '', $request->otherlocality);
         } else {
             $locality = \App\Watchoption::find($request->locality);
             $locality->name = str_ireplace(' kraj', '', $locality->name);
