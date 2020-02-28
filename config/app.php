@@ -51,7 +51,7 @@ return [
     |
     */
 
-    'url' => env('APP_URL', 'http://localhost/eia/'),
+    'url' => env('APP_URL', 'https://eia.cyklokoalicia.sk'),
 
     /*
     |--------------------------------------------------------------------------

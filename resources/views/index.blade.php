@@ -20,6 +20,12 @@
 <div class="col-md-2"></div>
 </div>
 
+<div class="row">
+    <div class="col-md-2"></div>
+    <div class="col-md-8"><small>Podmienky použitia: Služba poskytuje Cyklokoalícia. Vaša emailová adresa bude použitá na zasielanie notifikácií o EIA projektoch a činnostiach, ktoré Cyklokoalícia vykonáva. Zadaním emailovej adresy súhlasíte s týmto využitím. Odkaz na odhlásenie nájdete v pätičke každého zaslaného emailu.</small></div>
+    <div class="col-md-2"></div>
+</div>
+
 </div>
 
 </body>
