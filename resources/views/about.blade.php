@@ -20,6 +20,9 @@
 <h2>Kto nástroj prevádzkuje?</h2>
 <p>Nástroj prevádzkuje <a href="http://www.cyklokoalicia.sk">Cyklokoalícia</a>, ktorá ho najprv niekoľko rokov využívala pre svoje interné potreby.</p>
 <p><a href="http://www.cyklokoalicia.sk"><img src="//cyklokoalicia.sk/wp-content/themes/cyklokoalicia-2/img/cyklokoalicia_logo.svg" alt="Logo Cyklokoalicia" /></a></p>
+<h2>Ako môžem túto službu podporiť?</h2>
+<p>Ak chcete, aby sme službu prevádzkovali aj naďalej, podporte nás sumou 10+€ na účet: SK9683300000002700175046 (variabilný symbol 0314 alebo poznámka EIA).</p>
+<p><img src="{{ asset('images/eia-bsqr.png') }}" alt="PayBySquare podporte nás sumou 10+€" class="img-responsive byqr" /></p>
 </div>
 <div class="col-md-2"></div>
 </div>

@@ -6,4 +6,22 @@
 @import "variables";
 
 // Bootstrap
-@import "node_modules/bootstrap-sass/assets/stylesheets/bootstrap";
+//@import "node_modules/bootstrap-sass/assets/stylesheets/bootstrap";
+
+body {
+  font-size: 200%;
+}
+
+.footer {
+  margin-top: 2em;
+
+  @media screen and (max-width: 768px) {
+    img {
+      margin-top: 1rem;
+    }
+  }
+}
+
+.byqr {
+  max-width: 200px;
+}
