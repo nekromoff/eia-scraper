@@ -88,6 +88,11 @@
           font-size: 12px;
           text-align: center; }
 
+      .byqr {
+        max-width: 150px;
+        margin: 1em auto 0;
+      }
+
       /* -------------------------------------
           TYPOGRAPHY
       ------------------------------------- */
