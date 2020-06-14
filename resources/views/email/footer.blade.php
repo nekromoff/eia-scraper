@@ -20,7 +20,7 @@
                 <tr>
                   <td class="content-block powered-by">
                     <small>Službu poskytuje Cyklokoalícia. <strong>Ak chcete, aby sme službu prevádzkovali aj naďalej, podporte nás sumou 10+€ na účet: SK9683300000002700175046 (variabilný symbol 0314 alebo poznámka EIA).</strong></small><br/>
-                    <img src="{{ asset('images/eia-bsqr.png') }}" alt="PayBySquare" class="byqr" />
+                    <img src="{{ $message->embed(public_path().'/images/eia-bsqr.png') }}" alt="PayBySquare" class="byqr" />
                   </td>
                 </tr>
               </table>
