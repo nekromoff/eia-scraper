@@ -1,5 +1,5 @@
 @include('email.header')
-            <!-- START CENTERED WHITE CONTAINER -->
+    @foreach($projects as $project)
             <span class="preheader"><strong>Nové EIA: {{ $project->name }}</strong><br /><br />
             Okres:
             @foreach ($project->districts as $district)
@@ -77,4 +77,24 @@
                             </li>
                         @endforeach
                         </ul>
+
+                      </td>
+                    </tr>
+                  </table>
+                </td>
+              </tr>
+
+                <!-- END MAIN CONTENT AREA -->
+            </table>
+            <div class="footer">
+                <table border="0" cellpadding="0" cellspacing="0">
+                    <tr>
+                        <td class="content-block">
+                            <p><strong>Tento email dostávate, lebo ste sa prihlásili na odber upozornení na webe <a href="https://eia.cyklokoalicia.sk">Sleduj EIA</a>.</strong></p>
+                            <p><a href="{{ $project->unsubscribelinkloc }}" title="Zrušenie odberu upozornení pre danú lokalitu">Odhlásenie z odberu upozornení pre túto lokalitu</a>.</p>
+                        </td>
+                    </tr>
+                </table>
+            </div>
+    @endforeach
 @include('email.footer')

@@ -18,5 +18,3 @@ Route::post('sleduj', ['uses' => 'EIAController@storeForm', 'as' => 'store']);
 
 Route::get('cron/get', ['uses' => 'EIAController@get', 'as' => 'get']);
 Route::get('cron/update', ['uses' => 'EIAController@updateFiles', 'as' => 'update']);
-
-// Route::get('debug/project/{id}', ['uses' => 'EIAController@debugProject', 'as' => 'debug.project']);

@@ -85,123 +85,80 @@ class EIAController extends Controller
 
         $existingwatcher = \App\Watcher::where('email', $watcher->email)->where('search', $watcher->search)->first();
 
-        $notifycount = 0;
         // create new watcher only if it already does not exist
         if (!isset($existingwatcher)) {
             $watcher->save();
 
             $projects = \App\Project::with('regions')->with('districts')->with('localities')->with('companies.company')->with('documents')->where('updated_at', '>=', \Carbon\Carbon::now()->subDays(7))->get();
+            $notifications_queue = [];
             foreach ($projects as $project) {
-                $notify = 0;
                 $project->url = str_replace('/print', '', $project->url); // remove /print from URL
                 $project->url = str_replace('.sk/eia/', '.sk/sk/eia/', $project->url); // add /sk/ to URL
-                foreach ($project->regions->pluck('name')->toArray() as $region) {
-                    if (stripos($region, $watcher->search) !== false) {
-                        $notify = 1;
-                    }
-                }
-                foreach ($project->districts->pluck('name')->toArray() as $district) {
-                    if (stripos($district, $watcher->search) !== false) {
-                        $notify = 1;
-                    }
-                }
-                foreach ($project->localities->pluck('name')->toArray() as $locality) {
-                    if (stripos($locality, $watcher->search) !== false) {
-                        $notify = 1;
-                    }
-                }
-                if ($notify) {
+
+                $project_locations = array_merge(
+                    $project->regions->pluck('name')->toArray(),
+                    $project->districts->pluck('name')->toArray(),
+                    $project->localities->pluck('name')->toArray()
+                );
+
+                foreach ($project_locations as $project_location) {
+                    if (stripos($project_location, $watcher->search) === false) continue;
+
                     $hash = sha1($watcher->id . $watcher->search . $watcher->created_at);
                     $project->setAttribute('unsubscribelinkloc', route('unsubscribe', [$watcher->email, $hash, $watcher->id]));
-                    Mail::to($watcher->email)->send(new ProjectNotification($project));
-                    Log::info('Notifying ' . $watcher->email . ': ' . $project->name);
-                    $notifycount++;
+                    $notifications_queue[] = $project;
+                    break;
                 }
             }
         }
-
+        $notifications = collect($notifications_queue);
         $message = 'Budeme vám zasielať upozornenia na ' . $watcher->email . ' pre lokalitu: ' . $watcher->search . '.';
-        if ($notifycount > 0) {
-            $message .= ' Tiež sme vám poslali upozornenia na ' . $notifycount;
-            if ($notifycount == 1) {
-                $message .= ' projekt';
-            }
+        if ($notifications->count() > 0) {
+            Mail::to($watcher->email)->send(new ProjectNotification($notifications));
+            Log::info('Notifying ' . $watcher->email . ': ' . $notifications->map(function ($project) { return $project->name; })->implode(', '));
 
-            if ($notifycount >= 2 and $notifycount <= 4) {
-                $message .= ' projekty';
-            }
-
-            if ($notifycount >= 5) {
-                $message .= ' projektov';
-            }
-
+            $message .= ' Tiež sme vám poslali upozornenia na ' . $notifications->count();
+            $message .= ProjectNotification::formatPlural($notifications->count());
             $message .= ' EIA, ktoré boli pridané za posledných 7 dní a vyhovujú vašej požiadavke.';
         }
 
         return redirect()->route('index')->with('message', $message);
     }
 
-    public function sendNotifications($project_id)
+    private function sendNotifications($project_ids)
     {
-        $project = \App\Project::with('regions')->with('districts')->with('localities')->with('companies.company')->with('documents')->find($project_id);
         $watchers = \App\Watcher::get();
-        $notified_emails = [];
-        $project->url = str_replace('/print', '', $project->url); // remove /print from URL
-        $project->url = str_replace('.sk/eia/', '.sk/sk/eia/', $project->url); // add /sk/ to URL
-        foreach ($watchers as $watcher) {
-            $notify = 0;
-            foreach ($project->regions->pluck('name')->toArray() as $region) {
-                if (stripos($region, $watcher->search) !== false) {
-                    $notify = 1;
+        $notifications_queue = [];
+        foreach ($project_ids as $project_id) {
+            $project = \App\Project::with('regions')->with('districts')->with('localities')->with('companies.company')->with('documents')->find($project_id);
+            $project->url = str_replace('/print', '', $project->url);
+            $project->url = str_replace('.sk/eia/', '.sk/sk/eia/', $project->url);
+
+            $project_locations = array_merge(
+                $project->regions->pluck('name')->toArray(),
+                $project->districts->pluck('name')->toArray(),
+                $project->localities->pluck('name')->toArray()
+            );
+
+            foreach ($watchers as $watcher) {
+                foreach ($project_locations as $project_location) {
+                    if (stripos($project_location, $watcher->search) === false) continue;
+                    if (isset($notifications_queue[$watcher->email][$project->id])) continue; // Only notify once for project per email
+                    $hash = sha1($watcher->id . $watcher->search . $watcher->created_at);
+                    $project->setAttribute('unsubscribelinkloc', route('unsubscribe', [$watcher->email, $hash, $watcher->id]));
+                    $notifications_queue[$watcher->email][$project->id] = $project;
+                    break; // Stop searching localities as watcher was already fulfilled
                 }
-            }
-            foreach ($project->districts->pluck('name')->toArray() as $district) {
-                if (stripos($district, $watcher->search) !== false) {
-                    $notify = 1;
-                }
-            }
-            foreach ($project->localities->pluck('name')->toArray() as $locality) {
-                if (stripos($locality, $watcher->search) !== false) {
-                    $notify = 1;
-                }
-            }
-            if ($notify and in_array($watcher->email, $notified_emails) === false) {
-                $hash = sha1($watcher->id . $watcher->search . $watcher->created_at);
-                $project->setAttribute('unsubscribelinkloc', route('unsubscribe', [$watcher->email, $hash, $watcher->id]));
-                Mail::to($watcher->email)->send(new ProjectNotification($project));
-                Log::info('Notifying ' . $watcher->email . ': ' . $project->name);
-                $notified_emails[] = $watcher->email;
             }
         }
+
+        foreach ($notifications_queue as $email => $projects) {
+            $notifications = collect($projects);
+            Mail::to($email)->send(new ProjectNotification($notifications));
+            Log::info('Notifying ' . $email . ': ' . $notifications->map(function ($project) { return $project->name; })->implode(', '));
+        };
     }
-    /*
-    public function debugProject(Request $request)
-    {
-        while (1) {
-            $project = \App\Project::with('regions')->with('districts')->with('localities')->with('companies.company')->with('institutions.institution')->with('stakeholders.stakeholder')->with('documents')->find($request->id);
-            print_r($project);
-            flush();
-        }
-        return dd($project);
-    }
-    */
-/*
-public function refreshFiles() {
-$crawler=Goutte::request('GET', 'http://www.enviroportal.sk/sk/eia/print');
-$crawler->filter('tr:not(.head)')->each(function ($line) use (&$i, &$found) {
-$url='http://www.enviroportal.sk'.str_replace('/sk/','/',$line->filter('a')->attr('href')).'/print';
-$detail=Goutte::request('GET', $url);
-$o=0;
-$detail->filter('a')->each(function ($node) use (&$i, &$found, &$o) {
-if (strpos($node->attr('href'), 'eia/dokument')!==FALSE) {
-$found[$i]['doc'][$o]['name']=trim($node->text());
-$found[$i]['doc'][$o]['url']=trim($node->attr('href'));
-$o++;
-}
-});
-}
-}
- */
+
     public function retrieveData($searchparams = '')
     {
         // search[country]=1
@@ -473,6 +430,7 @@ $o++;
 
         //print_r($found); exit;
 
+        $notified_project_ids = [];
         // process retrieved data
         foreach ($found as $item) {
             $project = \App\Project::where('url', $item['url'])->first();
@@ -655,8 +613,9 @@ $o++;
                 }
             }
 
-            $this->sendNotifications($project->id);
+            $notified_project_ids[] = $project->id;
         }
+        $this->sendNotifications($notified_project_ids);
     }
 
     private function updateContentTypes()
