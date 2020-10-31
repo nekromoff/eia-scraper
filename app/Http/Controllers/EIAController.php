@@ -44,7 +44,6 @@ class EIAController extends Controller
 
     public function unsubscribe(Request $request)
     {
-        $all = false;
         if ($request->email == 'cyklokoalicia@googlegroups.com') {
             exit('bol si varovany, ale nepomohlo to. si blb a blbom ostanes! zaznamena bola tvoja IP adresa, pouzite zariadenie, mesto, region atd. a teraz sa bez hanbit do kuta.');
         }
@@ -56,6 +55,11 @@ class EIAController extends Controller
         $hash = sha1($existingwatcher->id . $existingwatcher->search . $existingwatcher->created_at);
         if ($request->hash != $hash) {
             return redirect()->route('index')->with('error', 'Nevieme vás odhlásiť, lebo odkaz na odhlásenie nie je funkčný. Skúste ho skopírovať ešte raz v celej dĺžke alebo kliknúť na odhlásenie priamo z emailu.');
+        }
+
+        if ($request->query('all')) {
+            \App\Watcher::where('email', $existingwatcher->email)->delete();
+            return redirect()->route('index')->with('message', 'Úspešne sme odhlásili váš email ' . $request->email . ' z EIA notifikácií pre všetky lokality.');
         }
 
         \App\Watcher::destroy($request->watcherid);

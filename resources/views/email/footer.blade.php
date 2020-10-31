@@ -10,6 +10,12 @@
                     <img src="{{ $message->embed(public_path().'/images/eia-bsqr.png') }}" alt="PayBySquare" class="byqr" />
                   </td>
                 </tr>
+              <tr>
+                  <td class="content-block">
+                      <p><strong>Tento email dostávate, lebo ste sa prihlásili na odber upozornení na webe <a href="https://eia.cyklokoalicia.sk">Sleduj EIA</a>.</strong></p>
+                      <p><a href="{{ $project->unsubscribelinkloc }}?all=true" title="Zrušenie odberu upozornení pre všetky lokality">Odhlásenie z odberu upozornení pre všetky lokality</a>.</p>
+                  </td>
+              </tr>
               </table>
             </div>
 
