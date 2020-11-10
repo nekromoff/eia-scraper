@@ -149,15 +149,19 @@ class EIAController extends Controller
                     if (stripos($project_location, $watcher->search) === false) continue;
                     if (isset($notifications_queue[$watcher->email][$project->id])) continue; // Only notify once for project per email
                     $hash = sha1($watcher->id . $watcher->search . $watcher->created_at);
-                    $project->setAttribute('unsubscribelinkloc', route('unsubscribe', [$watcher->email, $hash, $watcher->id]));
-                    $notifications_queue[$watcher->email][$project->id] = $project;
+                    $unsubscribelinkloc = route('unsubscribe', [$watcher->email, $hash, $watcher->id]);
+                    $notifications_queue[$watcher->email][$project->id] = [$project, $unsubscribelinkloc];
                     break; // Stop searching localities as watcher was already fulfilled
                 }
             }
         }
 
-        foreach ($notifications_queue as $email => $projects) {
-            $notifications = collect($projects);
+        foreach ($notifications_queue as $email => $projects_unsubscribelinklocs) {
+            $notifications = collect($projects_unsubscribelinklocs)
+                ->map(function ($project_unsubscribelinkloc) {
+                    $project_unsubscribelinkloc[0]->setAttribute('unsubscribelinkloc', $project_unsubscribelinkloc[1]);
+                    return $project_unsubscribelinkloc[0];
+                });
             Mail::to($email)->send(new ProjectNotification($notifications));
             Log::info('Notifying ' . $email . ': ' . $notifications->map(function ($project) { return $project->name; })->implode(', '));
         };
